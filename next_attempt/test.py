@@ -1,5 +1,5 @@
 import pygame
-import numpy as np
+import math as np
 pygame.init()
 WIDTH, HEIGHT = 1000, 1000
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -17,7 +17,7 @@ class Camera:
         scalar = sum([self.view[i] * vertex[i] for i in range(3)])
         dist = sum([vertex[i] ** 2 for i in range(3)]) ** 0.5
 
-        return np.arccos((scalar / dist)) * 180 / np.pi < self.fovy / 2 and self.near < scalar < self.far
+        return np.acos((scalar / dist)) * 180 / np.pi < self.fovy / 2 and self.near < scalar < self.far
     def __distance(self, vector):
         x, y, z = vector
         return np.sqrt(x * x + y * y + z * z)
@@ -66,7 +66,7 @@ class Camera:
             if vert is not None:
                 x, y = vert
                 pygame.draw.circle(screen, (255, 0, 0), (500 + x * self.frame[0], 500 +  y * self.frame[1]), 5)
-        plane_on = True
+        plane_on = Falseя
         if plane_on:
             for plane in sorted(obj.planes, key=lambda x: self.__plane_dist(x, obj)):
                 v1, v2, v3 = plane
@@ -189,9 +189,15 @@ render = True
 press = False
 while render:
     clock.tick(60)
+    pygame.display.set_caption(f"FPS: {clock.get_fps()}")
     screen.fill((0, 0, 0))
-    camera.render(pira)
-    camera.render(cube)
+    if pira.center[2] < cube.center[2]:
+        camera.render(pira)
+        camera.render(cube)
+    else:
+        camera.render(cube)
+        camera.render(pira)
+
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
             render = False
@@ -200,6 +206,11 @@ while render:
             press = True
         if ev.type == pygame.KEYUP and ev.key == 32:
             press = False
+        if ev.type == pygame.KEYDOWN and ev.key == 100:
+            pira.center = (0, -10, 50)
+            cube.center = (0, 10, 50)
+            pira.alpha = (0, 0, 0)
+            cube.alpha = (0, 0, 0)
             
         if ev.type == pygame.MOUSEMOTION:
             if press:
