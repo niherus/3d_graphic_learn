@@ -1,7 +1,6 @@
 import pygame
 import math
 from random import randint as rnd
-from map_maker import level
 
 pygame.init()
 WIDTH, HEIGHT = 1000, 1000
@@ -18,6 +17,8 @@ class Rays:
         self.range = 500
         self.fov = 120
         self.res = 1
+        self.wall = 800
+        self.d = 5
     
     def cast(self, objects):
         self.surface.fill((0, 0, 0))
@@ -29,15 +30,25 @@ class Rays:
             dist = self.range ** 2
             ddx, ddy = dx * math.cos(theta) - dy * math.sin(theta), dx * math.sin(theta) + dy * math.cos(theta)
             end = x + ddx * self.range, y + ddy * self.range
+            flag = False
+            
             for obj in objects:
                 new_end = obj.cut_vector((self.pos, end))
                 if dist > (new_end[0] - x) ** 2 + (new_end[1] - y) ** 2:
                     end = new_end
                     dist = (new_end[0] - x) ** 2 + (new_end[1] - y) ** 2
-            pygame.draw.line(screen, (255, 0, 0), self.pos, end)
+                    flag = True
             poli.append(end)
+            if flag:
+                x = (i + self.fov // 2 * self.res) / (self.fov * self.res) * WIDTH
+                wall = self.d / dist * self.wall
+                y = 500 - wall
+                h = self.fov * self.res / WIDTH
+                print(x, y)
+                pygame.draw.rect(screen, (255, 255, 255), ((x, y), (h, 2 * wall)))
         pygame.draw.polygon(self.surface, (255, 255, 0, 100), poli)
-        screen.blit(self.surface, (0, 0))
+        
+
         
         
     def move(self, dx, dy):
@@ -50,7 +61,7 @@ class Rays:
         return dx / d, dy / d
     
 class RectObj:
-    def __init__(self, x, y, w=10, h=10):
+    def __init__(self, x, y, w=200, h=100):
 
         self.size = w, h
         self.pos = x - w // 2, y + h // 2
@@ -97,10 +108,8 @@ class RectObj:
 rays = Rays(300, 900, (0, 1))
 
 boxes = []
-for i in range(level.shape[0]):
-    for j in range(level.shape[1]):
-        if level[i, j]:
-            boxes.append(RectObj(i * 10, j * 10))
+for i in range(10):
+    boxes.append(RectObj(rnd(1, 10) * 100, rnd(1, 10) * 100))
 
 render = True
 press = False

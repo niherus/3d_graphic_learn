@@ -24,8 +24,8 @@ class Camera:
     
     def __normalize_vector(self, vector):
         x, y, z, d = *vector, self.__distance(vector)
-        
         return (x / d, y / d, z / d)
+
          
     def __vertex_projection(self, vertex):
         if self.__check_vertex(vertex):
@@ -35,13 +35,13 @@ class Camera:
             return None
     def __plane_dist(self, plane, obj):
         vertixes = obj.render()
-        d = 10 ** 9
+        d = 0
+    
         for i in plane:
             dx, dy, dz = vertixes[i]
-            if self.__distance((dx, dy, dz)) < d:
-                d = self.__distance((dx, dy, dz))
+            d += self.__distance((dx, dy, dz))
         
-        return d
+        return d // 3
     
     def __plane_normal(self, plane, obj):
         vertixes = obj.render()
@@ -66,9 +66,9 @@ class Camera:
             if vert is not None:
                 x, y = vert
                 pygame.draw.circle(screen, (255, 0, 0), (500 + x * self.frame[0], 500 +  y * self.frame[1]), 5)
-        plane_on = Falseя
+        plane_on = True
         if plane_on:
-            for plane in sorted(obj.planes, key=lambda x: self.__plane_dist(x, obj)):
+            for plane in sorted(obj.planes, key=lambda x: self.__plane_dist(x, obj), reverse=True):
                 v1, v2, v3 = plane
 
                 if None not in (vertices[v1], vertices[v2], vertices[v3]):
@@ -182,21 +182,57 @@ class Piramid(Obj):
         self.planes = list(self.planes)
         self.alpha = 0, 0, 0
 
+class Octahedron(Obj):
+    def __init__(self, x, y, z, w=10, h=10, d=10):
+        self.center = x, y, z
+        self.size = w, h, d
+        self.vertexes = [
+            (-w // 2, h // 2, -d // 2), 
+            (-w // 2, h // 2, d // 2), 
+            (w // 2, h // 2, -d // 2), 
+            (w // 2, h // 2,  d // 2), 
+            (0, -h // 2, 0),
+            (0, h, 0), 
+        ]
+        self.edges  = [
+            (0, 1), 
+            (0, 2),
+            (0, 4),
+            (1, 3),
+            (2, 3),
+            (4, 0),
+            (4, 1),
+            (4, 2),
+            (4, 3),
+            (5, 0),
+            (5, 1),
+            (5, 2),
+            (5, 3)
+        ]
+        self.planes = set()
+        for e1 in self.edges:
+            for e2 in self.edges:
+                if len(set(e1) | set(e2)) == 3:
+                    self.planes.add(tuple(set(e1) | set(e2)))
+        
+        self.planes = list(self.planes)
+        self.alpha = 0, 0, 0
+
 camera = Camera(170, 1, 5, 200)
-pira = Piramid(0, -10, 50)    
+pira = Piramid(10, -10, 50)
 cube = Cube(0, 10, 50)
+octos = Octahedron(-10, -10, 50)
 render = True
 press = False
 while render:
     clock.tick(60)
     pygame.display.set_caption(f"FPS: {clock.get_fps()}")
     screen.fill((0, 0, 0))
-    if pira.center[2] < cube.center[2]:
-        camera.render(pira)
-        camera.render(cube)
-    else:
-        camera.render(cube)
-        camera.render(pira)
+
+    camera.render(pira)
+    camera.render(cube)
+    camera.render(octos)
+
 
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
