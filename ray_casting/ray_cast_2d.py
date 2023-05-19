@@ -50,13 +50,13 @@ class Rays:
         return dx / d, dy / d
     
 class RectObj:
-    def __init__(self, x, y, w=10, h=10):
+    def __init__(self, x, y, w=100, h=100):
 
         self.size = w, h
         self.pos = x - w // 2, y + h // 2
     
     def draw(self):
-        pygame.draw.rect(screen, (0, 255, 0), (self.pos, self.size))
+        pygame.draw.rect(screen, (0, 0, 0), (self.pos, self.size))
     
     def cut_vector(self, cvec):
         st1, end1 = cvec
@@ -100,7 +100,7 @@ boxes = []
 for i in range(level.shape[0]):
     for j in range(level.shape[1]):
         if level[i, j]:
-            boxes.append(RectObj(i * 10, j * 10))
+            boxes.append(RectObj(i * 100, j * 100))
 
 render = True
 press = False
@@ -113,6 +113,7 @@ while render:
     pygame.display.set_caption(f"FPS: {clock.get_fps()}")
     screen.fill((0, 0, 0))
     rays.cast(boxes)
+    screen.get_at((10, 10))
     for box in boxes:
         box.draw()
     for ev in pygame.event.get():
