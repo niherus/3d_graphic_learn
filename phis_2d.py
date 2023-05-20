@@ -36,8 +36,7 @@ while render:
     box.apply_forces()
     box.move()
     box.draw()
-    if box.pos[1] > 600:
-        box.velocity = (0, -288)
+
 
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
